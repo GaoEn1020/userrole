@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper  namespace="com.piesat.user.mapper.usercenter.UserInfoContentMapper">
+
+    <resultMap type="com.piesat.user.pojo.usercenter.UserInfoContent" id="UserInfoContentResultMap">
+        <id column="USER_ID" property="userId" />
+        <result column="USER_NAME" property="userName" />
+        <result column="USER_PASSWORD" property="userPassword" />
+        <result column="USER_REALNAME" property="userRealname" />
+        <result column="USER_SEX" property="userSex" />
+        <result column="USER_PHONE" property="userPhone" />
+        <result column="USER_NUMBER" property="userNumber" />
+        <result column="USER_ADDRESS" property="userAddress" />
+        <result column="USER_MAIL" property="userMail" />
+        <result column="USER_SERVE" property="userServe" />
+        <result column="USER_WECHAT" property="userWechat" />
+        <result column="USER_STAUS" property="userStaus" />
+        <result column="USER_REG_TIME" property="userRegTime" />
+        <result column="USER_TYPE" property="userType" />
+        <result column="BUSINESS_TYPE" property="businessType" />
+        <result column="USER_NAME_ID" property="userNameId" />
+    </resultMap>
+    <select id="findUserInfo" resultMap="UserInfoContentResultMap">
+        select user_id,user_realname,user_name,user_sex,user_phone,user_number,user_reg_time,user_type,business_type,user_staus,user_address,user_mail,user_name_id from scenery_userinfo
+        where user_staus=1
+            <if test="userType!=null and userType !=''">
+                and user_type = #{userType,jdbcType=VARCHAR}
+            </if>
+            <if test="businessType!=null and businessType !=''">
+                and business_type = #{businessType,jdbcType=VARCHAR}
+            </if>
+            <if test="userName!=null and userName!=''">
+                and user_realname like CONCAT('%',#{userName},'%')
+            </if>
+            <if test="userNumber!=null and userNumber!=''">
+                and user_number like CONCAT('%',#{userNumber},'%')
+            </if>
+        order by user_reg_time desc
+    </select>
+    <insert id="addUserInfo" parameterType="com.piesat.user.pojo.usercenter.UserInfoContent">
+         insert into scenery_userinfo(user_id,user_name,user_sex,user_phone,user_number,user_address,user_mail,user_type,business_type,user_reg_time,user_staus,user_realname,user_password,user_name_id,user_wechat)
+        values(#{userId},#{userName},#{userSex},#{userPhone},#{userNumber},#{userAddress},#{userMail},#{userType},#{businessType},#{userRegTime},#{userStaus},#{userRealname},#{userPassword},#{userNameId},#{userWechat})
+    </insert>
+    <select id="findByUserId" resultMap="UserInfoContentResultMap" >
+       select user_id,user_realname,user_sex,user_phone,user_number,user_address,user_mail,user_reg_time,user_type,business_type,user_name_id,user_name from scenery_userinfo
+       where
+       user_id=#{userId}
+    </select>
+    <update id="deleteByUserId" parameterType="String">
+        update scenery_userinfo
+        set
+        user_staus='0'
+        where user_id=#{userId}
+    </update>
+    <update id="updateUserInfo" parameterType="com.piesat.user.pojo.usercenter.UserInfoContent">
+      update scenery_userinfo
+              set user_sex=#{userSex},user_phone=#{userPhone},user_number=#{userNumber},user_address=#{userAddress},user_mail=#{userMail},user_type=#{userType},business_type=#{businessType}
+        where user_id=#{userId}
+    </update>
+    <select id="findByUserNameId" resultMap="UserInfoContentResultMap" >
+       select user_id,user_realname,user_sex,user_phone,user_number,user_address,user_mail,user_reg_time,user_type,business_type,user_name_id from scenery_userinfo
+       where
+       user_name_id=#{userNameId}
+    </select>
+    <select id="querymaxEndNo" resultType="java.lang.String">
+        select max(SUBSTRING(USER_NAME_ID,-6))
+        from scenery_userinfo where USER_NAME_ID like CONCAT(#{startNo},'%')
+    </select>
+    <select id="findByUserPhone" resultMap="UserInfoContentResultMap" >
+       select user_id,user_realname,user_sex,user_phone,user_number,user_address,user_mail,user_reg_time,user_type,business_type,user_name_id from scenery_userinfo
+       where
+       user_phone=#{userPhone} and user_staus=1
+    </select>
+    <select id="findByUserNumber" resultMap="UserInfoContentResultMap" >
+       select user_id,user_realname,user_sex,user_phone,user_number,user_address,user_mail,user_reg_time,user_type,business_type,user_name_id from scenery_userinfo
+       where
+       user_number=#{userNumber} and user_staus=1
+    </select>
+</mapper>

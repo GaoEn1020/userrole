@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper  namespace="com.piesat.user.mapper.usercenter.UserInfoMapper">
+
+    <resultMap type="com.piesat.user.pojo.usercenter.UserInfo" id="userInfoResultMap">
+        <id column="USER_ID" property="userId" />
+        <result column="USER_NAME_ID" property="userNameId" />
+        <result column="USER_NAME" property="userName" />
+        <result column="USER_PASSWORD" property="userPassword" />
+        <result column="USER_REALNAME" property="userRealname" />
+        <result column="USER_SEX" property="userSex" />
+        <result column="USER_PHONE" property="userPhone" />
+        <result column="USER_NUMBER" property="userNumber" />
+        <result column="USER_ADDRESS" property="userAddress" />
+        <result column="USER_MAIL" property="userMail" />
+        <result column="USER_WECHAT" property="userWechat" />
+        <result column="USER_SERVE" property="userServe" />
+        <result column="USER_STAUS" property="userStaus" />
+        <result column="USER_REG_TIME" property="userRegtime" />
+        <result column="USER_TYPE" property="userType" />
+        <result column="USER_SERVE_TYPE" property="userServeType" />
+    </resultMap>
+
+    <resultMap type="com.piesat.user.pojo.usercenter.UserMessage" id="userMessageResultMap">
+        <id column="MESSAGE_ID" property="messageId" />
+        <result column="MESSAGE_TYPE" property="messageType" />
+        <result column="PLANT_GUIDE_TYPE" property="plantGuideType" />
+        <result column="MESSAGE_CONTENT" property="messageContent" />
+        <result column="MESSAGE_SEND_TIME" property="messageSendTime" />
+        <result column="MESSAGE_STAUS" property="messageStaus" />
+        <result column="USER_ID" property="userId" />
+        <result column="LAND_ID" property="landId" />
+        <result column="MESSAGE_CANCEL" property="messageCancel" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <resultMap id="userViewMap" type="com.piesat.user.pojo.usercenter.UserView">
+        <id column="VIEW_ID" property="viewId" />
+        <result column="VIEW_DATE" property="viewDate" />
+        <result column="VIEW_INFO" property="viewInfo" />
+        <result column="USER_ID" property="userId" />
+    </resultMap>
+    <select id="findStausAndType" resultMap="userInfoResultMap" >
+        select user_staus,user_type,USER_NAME_ID
+        from scenery_userinfo
+        where user_id = #{userId}
+    </select>
+
+    <select id="queryUserInfo" resultMap="userInfoResultMap" >
+        select user_realname,user_sex,user_phone,user_number,user_address,user_mail,user_wechat,USER_NAME_ID,user_serve,user_serve_type
+        from scenery_userinfo
+        where user_id = #{userId}
+    </select>
+
+    <update id="updateUserInfo" parameterType="com.piesat.user.pojo.usercenter.UserInfo">
+        update scenery_userinfo set user_realname=#{userRealname},user_sex=#{userSex},user_phone=#{userPhone},user_number=#{userNumber},
+        user_address=#{userAddress},user_mail=#{userMail},user_wechat=#{userWechat}
+        where user_id = #{userId}
+    </update>
+
+    <select id="queryUserMessage" resultMap="userMessageResultMap" >
+        select message_id,message_type,plant_guide_type,message_content,message_send_time,message_staus
+        from scenery_usermessage
+        where user_id = #{userId} AND message_cancel=1
+    </select>
+
+    <select id="findUserMessageById" resultMap="userMessageResultMap" >
+        select message_type,plant_guide_type,message_content,message_send_time,message_staus,user_id,land_id,message_cancel
+        from scenery_usermessage
+        where message_id = #{messageId}
+    </select>
+
+   <!-- <update id="deleteUserMessage" parameterType="java.lang.String">
+        /*delete from scenery_usermessage where message_id = #{messageId} AND user_id = #{userId}*/
+        update scenery_usermessage set message_cancel=0
+        where message_id = #{messageId,jdbcType=VARCHAR} AND user_id = #{userId,jdbcType=VARCHAR}
+    </update>-->
+
+    <update id="deleteUserMessage" parameterType="com.piesat.user.pojo.usercenter.UserMessage">
+        update scenery_usermessage set message_cancel=0
+        where message_id = #{messageId} AND user_id = #{userId}
+    </update>
+
+    <update id="updateUserMessage" parameterType="com.piesat.user.pojo.usercenter.UserMessage">
+        update scenery_usermessage set MESSAGE_STAUS=1
+        where message_id = #{messageId}
+    </update>
+
+    <select id="queryUserInfoList" resultMap="userInfoResultMap" >
+        select user_id,user_realname,user_sex,user_phone,user_number,user_address,user_mail,user_wechat,user_staus,USER_NAME_ID
+        from scenery_userinfo
+        where USER_STAUS=1
+    </select>
+
+    <select id="getUserId" resultType="java.lang.String" >
+        select user_id
+        from scenery_userinfo
+        where land_delete = '0'
+    </select>
+
+    <select id="findUserMessageContentByZero" resultMap="userMessageResultMap" >
+        SELECT message_content,message_type
+        FROM  scenery_usermessage
+        WHERE message_type = 0 AND MESSAGE_STAUS = 0 AND MESSAGE_CANCEL=1 AND user_id = #{userId}
+        group BY message_send_time DESC LIMIT 1;
+    </select>
+
+    <select id="findUserMessageContentByOne" resultMap="userMessageResultMap" >
+        SELECT message_content,message_type
+        FROM  scenery_usermessage
+        WHERE message_type = 1 AND MESSAGE_STAUS = 0 AND MESSAGE_CANCEL=1 AND  user_id = #{userId}
+        group BY message_send_time DESC LIMIT 1;
+    </select>
+
+    <select id="findUserMessageContentByTwo" resultMap="userMessageResultMap" >
+        SELECT message_content,message_type
+        FROM  scenery_usermessage
+        WHERE message_type = 2 AND MESSAGE_STAUS = 0 AND MESSAGE_CANCEL=1 AND user_id = #{userId}
+        group BY message_send_time DESC LIMIT 1;
+    </select>
+
+    <select id="findUserMessageContentByThree" resultMap="userMessageResultMap" >
+        SELECT message_content,message_type
+        FROM  scenery_usermessage
+        WHERE message_type = 3 AND MESSAGE_STAUS = 0 AND MESSAGE_CANCEL=1 AND user_id = #{userId}
+        group BY message_send_time DESC LIMIT 1;
+    </select>
+
+    <select id="findUserMessageContentByFour" resultMap="userMessageResultMap" >
+        SELECT message_content,message_type
+        FROM  scenery_usermessage
+        WHERE message_type = 4 AND MESSAGE_STAUS = 0 AND MESSAGE_CANCEL=1 AND user_id = #{userId}
+        group BY message_send_time DESC LIMIT 1;
+    </select>
+
+    <!--
+    整理用户信息
+    public List<UserCountInfo> userSumInfo(String userId,String userNameId);
+    -->
+    <select id="userSumInfo" resultType="com.piesat.user.usercenter.UserCountInfo">
+        SELECT user_id as userId,user_name as userName,user_name_id as userNameId,user_staus as userStaus,
+	          (SELECT count(*) FROM scenery_userland WHERE scenery_userland.user_id = scenery_userinfo.user_id
+              ) AS sumLand,
+	          (SELECT sum(land_area) FROM scenery_userland WHERE scenery_userland.user_id = scenery_userinfo.user_id
+              ) AS sumArea,
+	          (SELECT count(*) FROM picture WHERE picture.USER_ID = scenery_userinfo.user_id AND PICTURE_TYPE = '0'
+              ) AS sumPhoto,
+	          (SELECT count(*) FROM land_image_compare WHERE land_image_compare.USER_ID = scenery_userinfo.user_id
+              AND IMAGE_TYPE in ('0','1') ) AS sumImage
+        FROM scenery_userinfo
+        <where>
+        <if test="userId != '' and userId != null">
+            and user_id=#{userId}
+        </if>
+        <if test="userNameId != '' and userNameId != null">
+            and user_name_id=#{userNameId}
+        </if>
+        </where>
+        order by user_name_id
+    </select>
+
+    <insert id="addUserView" parameterType="com.piesat.user.pojo.usercenter.UserView" >
+        insert into USER_VIEW(VIEW_ID,VIEW_DATE,VIEW_INFO,USER_ID)
+        values(#{viewId},#{viewDate},#{viewInfo},#{userId})
+    </insert>
+
+    <select id="findByNameId" resultMap="userInfoResultMap" >
+        select user_id,user_realname,user_sex,user_phone,user_number,user_address,user_mail,user_wechat,USER_NAME_ID
+        from scenery_userinfo
+        where user_name_id = #{userNameId}
+    </select>
+    <!--List<UserView> userViewFind(@Param("userId") String userId);-->
+    <select id="userViewFind" resultMap="userViewMap">
+        select VIEW_DATE,VIEW_INFO from USER_VIEW where user_id=#{userId} order by VIEW_DATE desc
+    </select>
+
+</mapper>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.piesat.user.mapper.usermapper.UserMapper">
+    <resultMap type="com.piesat.user.pojo.farmrecord.UserEntity" id="userMap">
+        <id property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userPassword" column="user_password"/>
+        <result property="userRealName" column="user_realname"/>
+        <result property="userSex" column="user_sex"/>
+        <result property="userPhone" column="user_phone"/>
+        <result property="userNumber" column="user_number"/>
+        <result property="userAddress" column="user_address"/>
+        <result property="userEmail" column="user_email"/>
+        <result property="userWechat" column="user_wechat"/>
+        <result property="userStatus" column="user_staus"/>
+        <result property="userRegTime" column="user_reg_time"/>
+        <result property="userType" column="user_type"/>
+        <result property="userNameId" column="user_name_id"/>
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        user_id,user_name,user_password,user_realname,user_sex,user_phone,user_number,user_address,user_mail,
+        user_wechat,user_staus,user_reg_time,user_type,user_name_id
+    </sql>
+
+    <select id="selectByName" resultMap="userMap" parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        scenery_userinfo
+        where
+        user_name = #{userName,jdbcType=VARCHAR}
+
+    </select>
+
+    <select id="login" resultMap="userMap" parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        scenery_userinfo
+        where
+        user_name = #{userName,jdbcType=VARCHAR}
+        and
+        user_password = #{userPassword,jdbcType=VARCHAR}
+        and USER_STAUS='1'
+
+    </select>
+
+    <select id="selectByPrimaryKey" resultMap="userMap" parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        scenery_userinfo
+        where
+        user_id = #{userId,jdbcType=VARCHAR}
+
+    </select>
+
+    <select id="selectByUserPhone" resultMap="userMap" parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        scenery_userinfo
+        where
+        user_phone = #{userPhone,jdbcType=VARCHAR}
+
+
+    </select>
+
+
+
+    <update id="updatePwdByUserId" parameterType="java.lang.String" >
+        update
+        scenery_userinfo
+        SET
+        user_password = #{userPassword,jdbcType=VARCHAR}
+        where
+        user_id = #{userId,jdbcType=VARCHAR}
+    </update>
+
+
+    <select id="getUserId" resultType="java.lang.String" >
+        select user_id
+        from scenery_userinfo
+        WHERE user_staus = 1
+    </select>
+
+
+
+</mapper>

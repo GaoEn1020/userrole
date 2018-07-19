@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper  namespace="com.piesat.user.mapper.usermapper.RoleRelationMapper">
+    <resultMap type="com.piesat.user.pojo.usercenter.RoleUser" id="roleUser">
+        <id column="UserTRole_ID" property="userTRoleId" />
+        <result column="MANAGE_USER_ID" property="manageUserId"/>
+        <result column="ROLE_ID" property="roleId"/>
+        <result column="ROLE_NAME" property="roleName"/>
+    </resultMap>
+
+    <resultMap id="userPrivilege" type="com.piesat.user.pojo.usercenter.UserPrivilege">
+        <id column="DEPART_ID" property="departId"/>
+        <result column="DEPART_NAME" property="departName"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="PARENT_ID" property="parentId"/>
+        <result column="ROLE_ID" property="roleId"/>
+        <result column="ROLE_NAME" property="roleName"/>
+        <result column="role_create_time" property="roleCreateTime"/>
+        <result column="ROLE_DESCRIBE" property="roleDescribe"/>
+        <result column="path" property="path"/>
+        <result column="indexes" property="indexes"/>
+        <result column="icon" property="icon"/>
+    </resultMap>
+    <resultMap type="com.piesat.user.pojo.usercenter.ManageUserInfo" id="manageUserInfo">
+        <id column="MANAGE_USER_ID" property="manageUserId" />
+        <result column="MANAGE_USER_NAME" property="manageUserName" />
+        <result column="MANAGE_USER_PHONE" property="manageUserPhone" />
+        <result column="MANAGE_USER_TIME" property="manageUserTime" />
+        <result column="MANAGE_USER_DEPART" property="manageUserDepart" />
+        <result column="MANAGE_USER_PASSWORD" property="manageUserPassWord" />
+        <result column="MANAGE_USER_SEX" property="manageUserSex" />
+
+        <result column="MANAGE_USER_NUMBER" property="manageUserNumber" />
+        <result column="MANAGE_USER_ADDRESS" property="manageUserAddress" />
+        <result column="MANAGE_USER_MAIL" property="manageUserMail" />
+        <result column="MANAGE_USER_WECHAT" property="manageUserWechat" />
+        <result column="MANAGE_USER_STATUS" property="manageUserStatus" />
+
+        <result column="ROLE_NAME" property="roleName"/>
+        <result column="ROLE_ID" property="roleId"/>
+    </resultMap>
+    <!--public Boolean addroleRelation;-->
+    <insert id="addroleRelation" parameterType="com.piesat.user.pojo.usercenter.RoleUser">
+        insert into usertrole(UserTRole_ID,MANAGE_USER_ID,ROLE_ID) values(#{userTRoleId},#{manageUserId},#{roleId})
+    </insert>
+
+    <update id="modifyRoleRelation" parameterType="com.piesat.user.pojo.usercenter.RoleUser">
+        update usertrole set ROLE_ID=#{roleId} where MANAGE_USER_ID=#{manageUserId}
+    </update>
+
+    <select id="queryByUserId" resultMap="roleUser">
+        select UserTRole_ID,MANAGE_USER_ID,ROLE_ID,
+              (select ROLE_NAME from role where role.role_id=usertrole.role_id) as ROLE_NAME
+        from usertrole
+        <where>
+            <if test="manageUserId != null and manageUserId!=''">
+                and MANAGE_USER_ID=#{manageUserId}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryByRoleId" resultMap="userPrivilege">
+        /*select t.DEPART_ID,p.DEPART_NAME,p.DESCRIPTION,t.ROLE_ID,p.PARENT_ID,
+        (select ROLE_NAME from role r where r.role_id=t.role_id)as ROLE_NAME
+        from  TRoleRelation t JOIN user_privilege p on p.DEPART_ID=t.DEPART_ID*/
+        select t.DEPART_ID,p.DEPART_NAME,p.DESCRIPTION,r.ROLE_ID,p.PARENT_ID,r.ROLE_NAME,r.role_create_time,r.ROLE_DESCRIBE
+        from  TRoleRelation t JOIN user_privilege p on p.DEPART_ID=t.DEPART_ID right join role r on r.role_id=t.role_id
+        <where>
+            <if test="roleId != null and roleId!=''">
+                and r.ROLE_ID=#{roleId}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="queryBydepartId" resultMap="userPrivilege">
+        select DEPART_ID,DEPART_NAME,DESCRIPTION,PARENT_ID from  user_privilege
+        <where>
+            <if test="departId != null and departId!=''">
+                and DEPART_ID=#{departId}
+            </if>
+        </where>
+    </select>
+    <!--//添加角色权限
+    public Boolean addRolePrivilege(Trolerelation trolerelation);-->
+    <insert id="addRolePrivilege" parameterType="com.piesat.user.pojo.usercenter.Trolerelation">
+        insert into  TRoleRelation(TRoleRelation_ID,ROLE_ID,DEPART_ID)
+        values(#{tRoleRelationId},#{roleId},#{departId})
+    </insert>
+
+    <!--//修改角色的普通属性
+    public Boolean modifyRole(Role role);-->
+    <update id="modifyRole" parameterType="`com.piesat.user.pojo.usercenter.Role">
+        update role set ROLE_NAME=#{roleName},ROLE_CREATE_TIME=#{roleCreateTime},ROLE_DESCRIBE=#{roleDescribe}
+         where role_id=#{roleId}
+    </update>
+    <!--添加角色的普通属性
+    public Boolean addRole(Role role);-->
+    <insert id="addRole" parameterType="com.piesat.user.pojo.usercenter.Role">
+        insert into role(role_id,ROLE_NAME,ROLE_CREATE_TIME,ROLE_DESCRIBE)
+         values(#{roleId},#{roleName},#{roleCreateTime},#{roleDescribe})
+    </insert>
+
+    <!--//删除该角色的所有权限  在角色权限表中
+    public Boolean deleteRolePrivilege(String roleId);-->
+    <delete id="deleteRolePrivilege">
+        delete from TRoleRelation where ROLE_ID=#{roleId}
+    </delete>
+
+    <!--先判断该角色是否有后管用户在使用，若有使用则不能删除
+    public Boolean queryByRoleIdUserIdUsed(@Param("roleId") String roleId);-->
+    <select id="queryByRoleIdUserIdUsed" resultMap="manageUserInfo">
+        select * from manage_user WHERE MANAGE_USER_ID in (
+                select MANAGE_USER_ID from usertrole where role_id=#{roleId}) and MANAGE_USER_STATUS='1'
+    </select>
+    <!--//在角色表中删除该角色
+    public Boolean deleteRole(@Param("roleId") String roleId);
+    -->
+    <delete id="deleteRole">
+        delete from role where role_id=#{roleId}
+    </delete>
+
+    <!--/**
+     * 查询所有角色的基本信息
+     */
+    public List<Role> queryRoleBaseInfo(@Param("roleId") String roleId);-->
+    <select id="queryRoleBaseInfo" resultType="com.piesat.user.pojo.usercenter.Role">
+        select role_id as roleId,role_name as roleName,role_create_time as roleCreateTime,role_describe as roleDescribe from role
+        <where>
+            <if test="roleId !=null and roleId!=''">
+                and role_id=#{roleId}
+            </if>
+        </where>
+        order by role_create_time desc
+    </select>
+
+    <!--
+    //根据父类编号进行查询
+    public List<UserPrivilege> queryByParentChild(@Param("parentId") String parentId);
+    -->
+    <select id="queryByParentChild" resultMap="userPrivilege">
+        select DEPART_ID,DEPART_NAME,DESCRIPTION,path,icon,indexes from user_privilege
+        <where>
+            <if test="parentId != null and parentId!=''">
+                and PARENT_ID = #{parentId}
+            </if>
+            <if test="roleId !=null and roleId!=''">
+                and #{roleId} in (select role_id from trolerelation where trolerelation.depart_id=user_privilege.depart_id)
+            </if>
+        </where>
+        order by DEPART_ID
+    </select>
+
+</mapper>

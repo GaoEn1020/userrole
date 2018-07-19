@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper  namespace="com.piesat.user.mapper.usermapper.AdminUserManageMapper">
+    <resultMap type="com.piesat.user.pojo.usercenter.ManageUserInfo" id="manageUserInfo">
+        <id column="MANAGE_USER_ID" property="manageUserId" />
+        <result column="MANAGE_USER_NAME" property="manageUserName" />
+        <result column="MANAGE_USER_NAME_ID" property="manageUserNameId" />
+        <result column="MANAGE_USER_PHONE" property="manageUserPhone" />
+        <result column="MANAGE_USER_TIME" property="manageUserTime" />
+        <result column="MANAGE_USER_DEPART" property="manageUserDepart" />
+        <result column="MANAGE_USER_PASSWORD" property="manageUserPassWord" />
+        <result column="MANAGE_USER_SEX" property="manageUserSex" />
+
+        <result column="MANAGE_USER_NUMBER" property="manageUserNumber" />
+        <result column="MANAGE_USER_ADDRESS" property="manageUserAddress" />
+        <result column="MANAGE_USER_MAIL" property="manageUserMail" />
+        <result column="MANAGE_USER_WECHAT" property="manageUserWechat" />
+        <result column="MANAGE_USER_STATUS" property="manageUserStatus" />
+
+        <result column="MANAGE_USER_REAL_NAME" property="manageUserRealName"/>
+
+        <result column="ROLE_NAME" property="roleName"/>
+        <result column="ROLE_ID" property="roleId"/>
+    </resultMap>
+
+    <insert id="addAdmin" parameterType="com.piesat.user.pojo.usercenter.ManageUserInfo">
+        insert into manage_user(MANAGE_USER_ID,MANAGE_USER_NAME,MANAGE_USER_PHONE,MANAGE_USER_TIME,MANAGE_USER_DEPART,
+                                MANAGE_USER_PASSWORD,MANAGE_USER_SEX,MANAGE_USER_NUMBER,MANAGE_USER_ADDRESS,
+                                MANAGE_USER_MAIL,MANAGE_USER_WECHAT,MANAGE_USER_STATUS,MANAGE_USER_NAME_ID,MANAGE_USER_REAL_NAME)
+        values(#{manageUserId},#{manageUserName},#{manageUserPhone},#{manageUserTime},#{manageUserDepart},
+              #{manageUserPassWord},#{manageUserSex},#{manageUserNumber},#{manageUserAddress},
+              #{manageUserMail},#{manageUserWechat},1,#{manageUserNameId},#{manageUserRealName})
+    </insert>
+
+    <!--计算编号的后两位
+   public String queryByManageUserId();-->
+    <select id="queryByManageUserId" resultType="java.lang.String">
+        select  max(MANAGE_USER_NAME_ID) as manageUserNameId
+        from manage_user
+    </select>
+
+    <update id="modifyAdmin" parameterType="com.piesat.user.pojo.usercenter.ManageUserInfo">
+        update manage_user
+        set MANAGE_USER_NAME=#{manageUserName},MANAGE_USER_REAL_NAME=#{manageUserRealName},MANAGE_USER_PHONE=#{manageUserPhone},MANAGE_USER_DEPART=#{manageUserDepart},
+            MANAGE_USER_SEX=#{manageUserSex},MANAGE_USER_NUMBER=#{manageUserNumber},MANAGE_USER_ADDRESS=#{manageUserAddress},
+            MANAGE_USER_MAIL=#{manageUserMail},MANAGE_USER_WECHAT=#{manageUserWechat},MANAGE_USER_PASSWORD=#{manageUserPassWord}
+        where MANAGE_USER_ID=#{manageUserId}
+    </update>
+
+    <update id="deleteAdmin" parameterType="java.lang.String">
+        update manage_user set MANAGE_USER_STATUS=0 where MANAGE_USER_ID=#{manageUserId}
+    </update>
+
+    <!--将该用户解冻可正常使用
+    public Boolean modifyStatusAdmin(@Param("manageUserId") String manageUserId);-->
+    <update id="modifyStatusAdmin">
+        update manage_user set MANAGE_USER_STATUS=1 where MANAGE_USER_ID=#{manageUserId}
+    </update>
+
+    <!--public List<ManageUserInfo> queryAdminUser(ManageUserInfo manageUserInfo);-->
+    <select id="queryAdminUser" parameterType="com.piesat.user.pojo.usercenter.ManageUserInfo" resultMap="manageUserInfo">
+        select MANAGE_USER_ID,MANAGE_USER_NAME,MANAGE_USER_PHONE,MANAGE_USER_TIME,MANAGE_USER_DEPART,
+               MANAGE_USER_PASSWORD,MANAGE_USER_SEX,MANAGE_USER_NUMBER,MANAGE_USER_ADDRESS,MANAGE_USER_REAL_NAME,
+               MANAGE_USER_MAIL,MANAGE_USER_WECHAT,MANAGE_USER_NAME_ID,
+                (select ROLE_NAME from ROLE where
+                ROLE.ROLE_ID=(select ROLE_ID from UserTRole where  UserTRole.MANAGE_USER_ID=manage_user.MANAGE_USER_ID)) as ROLE_NAME,
+              (select ROLE_ID from UserTRole where  UserTRole.MANAGE_USER_ID=manage_user.MANAGE_USER_ID) as ROLE_ID
+        from manage_user
+        where MANAGE_USER_STATUS=#{manageUserStatus}
+        <if test="manageUserId != null and manageUserId != ''">
+            and MANAGE_USER_ID=#{manageUserId}
+        </if>
+        <if test="manageUserName != null and manageUserName != ''">
+            and MANAGE_USER_NAME=#{manageUserName}
+        </if>
+        <if test="manageUserRealName != null and manageUserRealName != ''">
+            and MANAGE_USER_REAL_NAME=#{manageUserRealName}
+        </if>
+        <if test="manageUserNameId != null and manageUserNameId != ''">
+            and MANAGE_USER_NAME_ID=#{manageUserNameId}
+        </if>
+        <if test="manageUserName != null and manageUserName != ''">
+            and MANAGE_USER_NAME=#{manageUserName}
+        </if>
+        order by MANAGE_USER_TIME desc
+    </select>
+
+
+    <!--通过手机号查询用户public ManageUserInfo findByAdminUserPhone(@Param("userPhone") String userPhone);-->
+    <select id="findByAdminUserPhone" resultMap="manageUserInfo">
+        select
+          MANAGE_USER_ID,MANAGE_USER_NAME,MANAGE_USER_PHONE,MANAGE_USER_TIME,MANAGE_USER_DEPART,
+          MANAGE_USER_PASSWORD,MANAGE_USER_SEX,MANAGE_USER_NUMBER,MANAGE_USER_ADDRESS,
+          MANAGE_USER_MAIL,MANAGE_USER_WECHAT,MANAGE_USER_NAME_ID,MANAGE_USER_REAL_NAME
+        from
+        manage_user
+        where
+        MANAGE_USER_PHONE = #{userPhone,jdbcType=VARCHAR} and MANAGE_USER_STATUS='1'
+    </select>
+    <!-- 修改管理员密码
+    public Boolean modifyAdminUserPassword(@Param("manageUserId") String manageUserId,@Param("newPwd") String newPwd);-->
+    <update id="modifyAdminUserPassword">
+        update manage_user set MANAGE_USER_PASSWORD=#{newPwd} where MANAGE_USER_ID=#{manageUserId}
+    </update>
+
+    <!--通过用户名查询对象
+    ManageUserInfo selectByName(@Param(value = "userName") String userName);-->
+    <select id="selectByName" resultMap="manageUserInfo">
+        select
+          MANAGE_USER_ID,MANAGE_USER_NAME,MANAGE_USER_PHONE,MANAGE_USER_TIME,MANAGE_USER_DEPART,
+          MANAGE_USER_PASSWORD,MANAGE_USER_SEX,MANAGE_USER_NUMBER,MANAGE_USER_ADDRESS,
+          MANAGE_USER_MAIL,MANAGE_USER_WECHAT,MANAGE_USER_NAME_ID,MANAGE_USER_REAL_NAME
+        from
+        manage_user
+        where
+        MANAGE_USER_NAME = #{userName} and MANAGE_USER_STATUS='1'
+    </select>
+
+</mapper>

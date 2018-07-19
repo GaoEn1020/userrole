@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper  namespace="com.piesat.user.mapper.usercenter.UserInfoCountMapper">
+
+    <resultMap type="com.piesat.user.pojo.usercenter.UserInfoCount" id="UserInfoCountResultMap">
+        <id column="USERINFOCOUNT_ID" property="userInfoCountId" />
+        <result column="USERINFOCOUNT_NUMBER" property="userInfoCountNumber" />
+        <result column="USERINFOCOUNT_AREASUM" property="userInfoCountAreaSum" />
+        <result column="USERINFOCOUNT_MESSAGESUM" property="userInfoCountMessageSum" />
+        <result column="USERINFOCOUNT_SERVE" property="userInfoCountServe" />
+        <result column="MESSAGE_ID" property="messageId" />
+        <result column="LAND_ID" property="landId" />
+        <result column="USER_ID" property="userId" />
+    </resultMap>
+
+    <resultMap type="com.piesat.user.pojo.farmland.FarmlandInfo" id="farmInfoResultMap">
+        <id column="LAND_ID" property="landId" />
+        <result column="LAND_NAME" property="landName" />
+        <result column="LAND_AREA" property="landArea" />
+        <result column="LAND_CROP_TYPE" property="landCropType" />
+        <result column="LAND_OWNERSHIP" property="landOwnerShip" />
+        <result column="LAND_TRA_PRICES" property="landTraprices" />
+        <result column="LAND_POSITION" property="landPosition" />
+        <result column="LAND_LON" property="landLon" />
+        <result column="LAND_LAT" property="landLat" />
+        <result column="LAND_HEIGHT" property="landHeight" />
+        <result column="LAND_STAUS" property="landStatus" />
+        <result column="USER_ID" property="userId" />
+        <result column="FEATURE_POLYGON" property="featurePolygon" />
+    </resultMap>
+
+    <select id="queryUserLandCount" resultType="Integer" >
+        SELECT COUNT(land_id)
+        FROM scenery_userland
+        WHERE user_id=#{userId} AND land_delete='0'
+    </select>
+
+    <select id="queryUserInfoCountAreaSum" resultType="Double" >
+        SELECT SUM(land_area)
+        FROM scenery_userland
+        WHERE user_id=#{userId} AND land_delete='0'
+    </select>
+
+    <select id="queryUserInfoCountMessageSum" resultType="Integer" >
+        SELECT DATEDIFF(
+                  CURRENT_TIMESTAMP (),
+		          (SELECT USER_REG_TIME FROM SCENERY_USERINFO  WHERE user_id=#{userId})
+	            )
+
+    </select>
+
+    <select id="queryUserInfoCountServe" resultType="String" >
+        SELECT user_serve
+        FROM scenery_userinfo
+        WHERE user_id=#{userId}
+    </select>
+
+
+</mapper>
